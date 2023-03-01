@@ -1,0 +1,20 @@
+{
+  "name": "webs",
+  "version": "1.1.1",
+  "description": "1",
+  "main": "app.js",
+  "scripts": {
+    "test": "command.js"
+  },
+  "keywords": [
+    "11"
+  ],
+  "author": "1",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "express": "^4.17.1",
+    "http-proxy-middleware": "^2.0.1",
+    "node-require-context": "^1.0.0"
+  }
+}

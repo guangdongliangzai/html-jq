@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="screen-orientation" content="portrait">
+  <meta name="full-screen" content="yes">
+  <meta name="browsermode" content="application">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.8/dist/vue.js"></script>
+  <title>数据面板</title>
+  <script src="./js/jquery-3.5.1.min.js"></script>
+  <script type="text/javascript" src="./js/include.js"></script>
+  <script>
+    (function (doc, win) {
+      //      用原生方法获取用户设置的浏览器的字体大小(兼容ie)
+      if (doc.documentElement.currentStyle) {
+        var user_webset_font = doc.documentElement.currentStyle['fontSize'];
+      } else {
+        var user_webset_font = getComputedStyle(doc.documentElement, false)['fontSize'];
+      }
+      //      取整后与默认16px的比例系数
+      var xs = parseFloat(user_webset_font) / 16;
+      //      设置rem的js设置的字体大小
+      var view_jsset_font, result_font;
+      var docEl = doc.documentElement,
+        resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+        clientWidth,
+        recalc = function () {
+          clientWidth = docEl.clientWidth;
+          if (!clientWidth) return;
+          if (!doc.addEventListener) return;
+          view_jsset_font = 16 * (clientWidth / 1920);
+          result_font = view_jsset_font / xs;
+          if (result_font < 13) {
+            result_font = 13
+          }
+          docEl.style.fontSize = 14 + 'px';
+
+        };
+      win.addEventListener(resizeEvt, recalc, false);
+      doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+  </script>
+  <style>
+    @font-face {
+      font-family: OPPOSans;
+      src: url('./fonts/OPPOSans-B.ttf') format('truetype'),
+        url('./fonts/OPPOSans-H.ttf') format('truetype');
+
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    html,
+    body {
+      min-width: 1400px;
+      width: 100vw;
+      height: 100vh;
+      min-width: 1600px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+      font-weight: 500;
+      color: #fff;
+      position: relative;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      background-image: url('./mapImg/bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 99;
+
+    }
+
+
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background-color: #fff;
+      -webkit-border-radius: 2em;
+      -moz-border-radius: 2em;
+      border-radius: 2em;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background-color: #c0dbfb;
+      -webkit-border-radius: 2em;
+      -moz-border-radius: 2em;
+      border-radius: 2em;
+    }
+
+    div {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .title_top {
+      width: 116.94rem;
+      height: 11.08rem;
+      background-image: url('./mapImg/title_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      font-size: 3rem;
+      font-family: OPPOSans;
+      font-weight: 400;
+      color: #FFFFFF;
+      text-align: center;
+      line-height: 8.3rem;
+      position: relative;
+      letter-spacing: 6px;
+      margin: auto;
+
+    }
+
+    .title_top_time {
+      font-size: 1rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      position: absolute;
+      top: 3.25rem;
+      right: 1.38rem;
+      line-height: 1rem;
+      letter-spacing: 1px
+    }
+
+    .content_box {
+      width: 115rem;
+      height: 69.5rem;
+      display: flex;
+
+
+    }
+
+    /* 左边 */
+    .content_left {
+      width: 54.94rem;
+      height: 64.88rem;
+      position: relative;
+      overflow: hidden;
+      background-image: url('./mapImg/map_bg.png');
+      background-size: 100% 100%;
+    }
+
+    .map_top_left {
+      top: 0.1rem;
+      left: 0;
+      position: absolute;
+      width: 3.5rem;
+      height: 3.94rem;
+      z-index: 9;
+    }
+
+    .map_top_right {
+      top: 0.1rem;
+      right: 0;
+      position: absolute;
+      width: 3.5rem;
+      height: 3.94rem;
+      z-index: 9;
+    }
+
+    .map_bottom {
+      bottom: -.2rem;
+      left: 0;
+      position: absolute;
+      width: 54.94rem;
+      height: 2.81rem;
+      z-index: 9;
+    }
+
+    .map_title {
+      width: 12.81rem;
+      height: 1.5rem;
+      font-size: 1.5rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      position: absolute;
+      left: 1.7rem;
+      bottom: 1.9rem;
+    }
+
+    .map_box {
+      width: 54.6rem;
+      height: 71rem;
+      margin: auto;
+      margin-left: 0.2rem;
+      margin-top: 0.2rem;
+      /* border-radius: 3.8rem; */
+    }
+
+    .statistics_show {
+      width: 54.44rem;
+      position: absolute;
+      left: 0;
+      top: 0;
+      padding-top: 0.33px;
+      z-index: 99;
+    }
+
+    .statistics_show .mun_item {
+      width: 21.94rem;
+      margin-top: 2.4rem;
+      display: inline-block;
+      margin-left: 3.6rem;
+    }
+
+    .statistics_show .mun_item .mun_item_title {
+      font-size: 1.13rem;
+      font-family: Microsoft YaHei;
+      font-weight: 300;
+      color: #95CBF2;
+      width: 13.69rem;
+      height: 2.13rem;
+      background-image: url('./mapImg/mun_title_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      text-align: center;
+      line-height: 2.13rem;
+      margin: auto;
+    }
+
+    .statistics_show .mun_item .mun_item_content {
+      font-size: 2.25rem;
+      font-family: OPPOSans;
+      font-weight: 800;
+      color: #FFFFFF;
+      width: 21.94rem;
+      height: 5.13rem;
+      font-size: 2.25rem;
+      font-family: OPPOSans;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 5.13rem;
+      background-image: url('./mapImg/mun_item_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      text-align: center;
+      margin-top: 1.19rem;
+      letter-spacing: 3px;
+    }
+
+
+
+    /* 中间 */
+    .content_center {
+      width: 28.38rem;
+      margin-left: 1.44rem;
+    }
+
+    .user_type {
+      width: 29rem;
+      height: 15.22rem;
+      background-image: url('./mapImg/user_type_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    .user_type_img {
+      width: 1.25rem;
+      height: 0.94rem;
+    }
+
+    /* 图表标题 */
+    .user_type .title,
+    .shop_type .title,
+    .data_analysis .title,
+    .cabinet_address .title,
+    .order_box .title {
+      height: 4rem;
+      line-height: 4rem;
+      font-size: 1.25rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      text-align: left;
+      padding: 0.6rem 0 0 1.75rem;
+    }
+
+    .shop_type {
+      margin-top: 1rem;
+      width: 29rem;
+      height: 20rem;
+      background-image: url('./mapImg/user_type_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    .svg_one {
+      width: 28rem;
+      height: 10.5rem;
+      margin: auto !important;
+
+    }
+
+    .svg_two {
+      width: 28.38rem;
+      height: 13rem;
+      margin-top: 0.8rem;
+    }
+
+    .svg_four {
+      width: 27rem;
+      height: 20rem;
+
+    }
+
+    .svg_five {
+      width: 29rem;
+      height: 22rem;
+      margin: auto;
+      margin-left: -1.8rem;
+      margin-top: -1rem;
+    }
+
+    .data_analysis {
+      margin-top: 1.4rem;
+      width: 29rem;
+      height: 27.56rem;
+      background-image: url('./mapImg/data_analysis_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+
+    /* 数据分析动图 */
+
+    .data_analysis .Taichi_outside {
+      width: 23rem;
+      height: 23rem;
+      position: relative;
+      margin: auto;
+      margin-top: 0.5rem;
+    }
+
+    .data_analysis .Taichi_outside .middle_round {
+      width: 14rem;
+      height: 7.5rem;
+      position: absolute;
+      top: 7.75rem;
+      left: 4.5rem;
+      line-height: 3.25rem;
+      text-align: center;
+      overflow: hidden
+    }
+
+
+
+    .middle_round_proportion {
+      width: 14rem;
+      height: 7.5rem;
+    }
+
+    .middle_round_txt {
+      font-size: 0.63rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .Taichi_outside .Eight_analysis_item {
+      width: 8rem;
+      height: 6.13rem;
+      /* border: 1px solid #DBE9FF; */
+      background-image: url("./mapImg/tj_BG.png");
+      background-size: 100% 100%;
+
+    }
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(2) {
+      position: absolute;
+      top: 1rem;
+      left: 7.5rem;
+    }
+
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(3) {
+      transform: rotate(45deg);
+      position: absolute;
+      top: 3rem;
+      right: 2rem;
+    }
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(4) {
+      transform: rotate(90deg);
+      position: absolute;
+      top: 8.5rem;
+      right: 0;
+    }
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(5) {
+      transform: rotate(135deg);
+      position: absolute;
+      bottom: 3rem;
+      right: 2rem;
+    }
+
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(6) {
+      transform: rotate(180deg);
+      position: absolute;
+      bottom: 1rem;
+      left: 7.5rem;
+    }
+
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(7) {
+      transform: rotate(-135deg);
+      position: absolute;
+      bottom: 3rem;
+      left: 2rem;
+    }
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(8) {
+      transform: rotate(-90deg);
+      position: absolute;
+      top: 8.5rem;
+      left: 0;
+    }
+
+    .Taichi_outside .Eight_analysis_item:nth-of-type(9) {
+      transform: rotate(-45deg);
+      position: absolute;
+      top: 3rem;
+      left: 2rem;
+    }
+
+    .Eightaictve {
+      background-image: url("./mapImg/tj_BG2.png") !important;
+      background-size: 100% 100%;
+    }
+
+    .Eight_analysis_item_title {
+      width: 6rem;
+      margin: auto;
+      white-space: nowrap;
+      overflow: hidden;
+
+      text-align: center;
+      font-size: 1rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      margin-top: 1.4rem;
+    }
+
+    .Eight_analysis_item_value {
+      width: 6rem;
+      margin: auto;
+      font-size: 1rem;
+      font-family: Microsoft YaHei;
+      font-weight: 400;
+      color: #84FAEB;
+      margin-top: 0.5rem;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+
+    }
+
+    /* 右边 */
+    .content_right {
+      width: 28.38rem;
+      margin-left: 1.94rem;
+    }
+
+    /* 智能柜机订单统计 */
+    .order_item {
+      width: 29rem;
+      height: 36rem;
+      background-image: url('./mapImg/order_item_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    .order_top_first {
+      padding: 2.31rem 1.38rem 0;
+    }
+
+    .order_top_second {
+      padding: 0 1.38rem 0;
+    }
+
+    .order_top_title {
+      width: 8.75rem;
+      height: 2.13rem;
+      background-image: url('./mapImg/sale_volume_title.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      font-size: 0.88rem;
+      font-family: Microsoft YaHei;
+      font-weight: 300;
+      color: #95CBF2;
+      line-height: 2.13rem;
+      padding-left: 0.8rem;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .order_top_box {
+      display: inline-block
+    }
+
+    .order_top_num {
+      padding: 0;
+      list-style: none;
+      display: flex;
+      height: 2.3rem;
+      overflow-y: hidden;
+      margin-top: 1.2rem;
+    }
+
+    .order_top_num li {
+      width: 2rem;
+      height: 2rem;
+      background: #0C446D;
+      border: 0.06rem solid #349DE4;
+      font-size: 1.5rem;
+      font-family: OPPOSans;
+      font-weight: bold;
+      color: #82FAFB;
+      text-align: center;
+      margin: 0 0.31rem;
+      transition: transform 1s ease-in-out;
+
+    }
+
+    .add_item_transform {
+      transform: translate(0, -120%);
+
+    }
+
+    .remove_item_transform {
+      transform: translate(0, 0);
+    }
+
+
+    /* 柜机投放区域分布 */
+    .cabinet_address {
+      width: 29rem;
+      height: 27.56rem;
+      margin-top: 1.46rem;
+      background-image: url('./mapImg/data_analysis_bg.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+
+
+    /* // 小于等于 1366px 宽度的屏幕全都适应 */
+    @media only screen and (max-width: 1366px) {
+      .content_box {
+        margin-left: 2rem;
+      }
+    }
+
+    /* // 大于 1600px 宽度屏幕的全都适应 */
+    @media only screen and (min-width: 1600px) {
+      .content_box {
+        margin: auto;
+      }
+    }
+
+    /* // 大于1366px - 1600px 之间的宽度屏幕 */
+    @media only screen and (min-width: 1366px) and (max-width: 1600px) {
+      .content_box {
+        margin-left: 2.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="title_top">
+    业务运营数据
+    <div class="title_top_time" id="time_txt">
+    </div>
+  </div>
+  <div class="content_box">
+    <div class="content_left">
+      <div class="statistics_show">
+        <div class="mun_item">
+          <div class="mun_item_title"> 平台注册用户总数 </div>
+          <div class="mun_item_content" id="register_total"> -</div>
+        </div>
+        <div class="mun_item">
+          <div class="mun_item_title"> 平台会员用户总数 </div>
+          <div class="mun_item_content" id="user_total"> -</div>
+        </div>
+        <div class="mun_item">
+          <div class="mun_item_title"> 本地合作商交易额 </div>
+          <div class="mun_item_content" id="transaction_total"> -</div>
+        </div>
+        <div class="mun_item">
+          <div class="mun_item_title"> 本地生活签约店铺 </div>
+          <div class="mun_item_content" id="shop_total"> -</div>
+        </div>
+      </div>
+      <div id="map" class="map_box"></div>
+      <img class="map_top_left" src="./mapImg/map_top_left.png" alt="">
+      <img class="map_top_right" src="./mapImg/map_top_right.png" alt="">
+      <img class="map_bottom" src="./mapImg/map_bottom.png" alt="">
+
+      <div class="map_title">在投意向区域</div>
+    </div>
+
+    <div class="content_center">
+      <div class="user_type">
+        <div class="title">
+          <img class="user_type_img" src="./mapImg/title_icon.png" alt="">
+          用户身份占比
+        </div>
+        <div id="svg_one" class="svg_one"></div>
+      </div>
+      <div class="shop_type">
+        <div class="title">
+          <img class="user_type_img" src="./mapImg/title_icon.png" alt="">
+          签约店铺分类占比
+        </div>
+        <div id="svg_two" class="svg_two"></div>
+      </div>
+      <div class="data_analysis">
+        <div class="title">
+          <img class="user_type_img" src="./mapImg/title_icon.png" alt="">
+          柜机运营数据分析
+        </div>
+
+        <div class="Taichi_outside" id="MachineVue">
+          <div class="middle_round">
+            <div class="middle_round_progress">
+              <div id="svg_three" class="middle_round_proportion"></div>
+            </div>
+          </div>
+          <div class="Eight_analysis_item" v-for="item, index in Machine_status" :key="index">
+            <div class="Eight_analysis_item_title">
+              {{item.name}}
+            </div>
+            <div class="Eight_analysis_item_value">
+              {{item.value}}台
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="content_right">
+      <div class="order_item">
+        <div class="order_top_first">
+          <div class="order_top_title"> 本周柜机销售额</div>
+          <div class="order_top_box">
+            <ul class="order_top_num" id="week_in">
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+            </ul>
+          </div>
+        </div>
+        <div class="order_top_second">
+          <div class="order_top_title"> 本月柜机销售额</div>
+          <div class="order_top_box">
+            <ul class="order_top_num" id="month_in">
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+              <li>0</li>
+            </ul>
+          </div>
+        </div>
+        <div class="order_box">
+          <div class="title" style="padding-top:0">
+            <img class="user_type_img" src="./mapImg/title_icon.png" alt="">
+            智能柜机订单统计
+          </div>
+          <div id="svg_four" class="svg_four"></div>
+        </div>
+      </div>
+      <div class="cabinet_address">
+        <div class="title">
+          <img class="user_type_img" src="./mapImg/title_icon.png" alt="">
+          柜机投放区位分布
+        </div>
+        <div id="svg_five" class="svg_five"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=e5a96ff288a1bdff1872b2c9cd3dac9b"></script>
+  <script src="https://webapi.amap.com/loca?v=2.0.0&key=e5a96ff288a1bdff1872b2c9cd3dac9b"></script>
+  <script>
+    //柜机运营数据分析 
+    var MachineVue = new Vue({
+      el: '#MachineVue',
+      data() {
+        return {
+          Machine_status: [
+            { name: "在线机器", value: 27 },
+            { name: "离线机器", value: 3 },
+            { name: "机器异常", value: 0 },
+            { name: "机器缺货", value: 6 },
+            { name: "机器预警", value: 11 },
+            { name: "签约机器", value: 21 },
+            { name: "机器升级", value: 0 },
+            { name: "在途机器", value: 16 },
+          ]
+        }
+      },
+      methods: {
+      }
+    })
+
+    var Eightindex = 0
+    setInterval(() => {
+      jQuery($(".Eight_analysis_item")[Eightindex]).addClass("Eightaictve")
+      jQuery($(".Eight_analysis_item")[Eightindex - 1]).removeClass("Eightaictve")
+      Eightindex++
+      if (Eightindex == 9) {
+        Eightindex = 0
+      }
+    }, 1500)
+
+    var map = new AMap.Map('map', {
+      zoom: 4.7,
+      pitch: 32,
+      showLabel: false,
+      viewMode: '3D',
+      center: [110.26641, 35.132324],
+      mapStyle: 'amap://styles/darkblue',
+
+    });
+    // 初始化文字-连线-标点
+    var labelLayer = new AMap.LabelsLayer({
+      rejectMapMask: true,
+      collision: true,
+      animation: true,
+    });
+    map.add(labelLayer);
+    var loca = new Loca.Container({
+      map,
+    });
+
+    // var linkLayer = new Loca.LinkLayer({
+    //   zIndex: 20,
+    //   opacity: 1,
+    //   visible: true,
+    //   zooms: [2, 22],
+    // });
+    //添加连线
+    // var lineList = {
+    //   type: "FeatureCollection",
+    //   features: [
+    //     {
+    //       type: "Feature",
+    //       geometry: {
+    //         type: "LineString",
+    //         "coordinates": [[113.936903, 22.523912], [111.961625, 21.881174]]
+    //       },
+    //       properties: {
+    //         country: "深圳-阳江",
+    //         type: 1
+    //       }
+    //     },
+    //     {
+    //       type: "Feature",
+    //       geometry: {
+    //         type: "LineString",
+    //         "coordinates": [[113.936903, 22.523912], [113.014607, 28.193727]]
+    //       },
+    //       properties: {
+    //         country: "深圳-长沙",
+    //         type: 0
+    //       }
+    //     }
+    //   ]
+    // }
+    // const lineList_new = new Loca.GeoJSONSource({
+    //   data: lineList,
+    // });
+    // linkLayer.setSource(lineList_new);
+    // linkLayer.setStyle({
+    //   lineColors: function (index, item) {
+    //     return item.link.properties.type === 0 ? ['#25CDEA', '#12BFBF'] : ['#FFD87B', '#FF4F00'];
+    //   },
+    //   height: function (index, item) {
+    //     return item.distance;//线的高度
+    //   },
+    //   smoothSteps: function (index, item) {
+    //     return 200;
+    //   },
+    // });
+    // loca.add(linkLayer);//创建连线
+    var scatterLayer_shenzhen = new Loca.ScatterLayer({
+      zIndex: 10,
+      opacity: 1,
+      visible: true,
+      zooms: [2, 22],
+    });
+
+    var scatterLayer_city = new Loca.ScatterLayer({
+      zIndex: 10,
+      opacity: 0.8,
+      visible: true,
+      zooms: [2, 22],
+    });
+    //添加文字图层
+    const cityListText = [
+      { country: "上海市", coordinates: [121.473717, 31.23035] },
+      { country: "杭州市", coordinates: [120.210663, 30.246506] },
+      { country: "合肥市", coordinates: [117.22715, 31.820431] },
+      { country: "济南市", coordinates: [117.120087, 36.65184] },
+      { country: "厦门市", coordinates: [118.089203, 24.479628] },
+      { country: "北京市", coordinates: [116.391907, 39.908189] },
+      { country: "天津市", coordinates: [117.201324, 39.085068] },
+      { country: "太原市", coordinates: [112.548965, 37.870369] },
+      { country: "石家庄市", coordinates: [114.514778, 38.04232] },
+      { country: "深圳市", coordinates: [114.058876, 22.542877] },
+      { country: "南宁市", coordinates: [108.366272, 22.81724] },
+      { country: "桂林市", coordinates: [110.179787, 25.23535] },
+      { country: "武汉市", coordinates: [114.305344, 30.592773] },
+      { country: "郑州市", coordinates: [113.625351, 34.747192] },
+      { country: "长沙市", coordinates: [112.938904, 28.228258] },
+      { country: "重庆市", coordinates: [106.550545, 29.563747] },
+      { country: "成都市", coordinates: [104.066963, 30.658624] },
+      { country: "贵阳市", coordinates: [106.628159, 26.646847] },
+      { country: "昆明市", coordinates: [102.83297, 24.880014] },
+    ]
+    //添加城市
+    var topCity = {
+      type: 'FeatureCollection',
+      features: []
+    };
+
+    cityListText.forEach(item => {
+      topCity.features.push({
+        type: "Feature",
+        properties: {
+          cityName: item.country,
+          ratio: 0,
+          rank: 96
+        },
+        "geometry": {
+          type: "Point",
+          coordinates: item.coordinates
+        }
+      })
+    })
+
+    var scatterLayer_List = new Loca.GeoJSONSource({
+      data: topCity
+    });
+    scatterLayer_city.setSource(scatterLayer_List);
+    scatterLayer_city.setStyle({
+      size: [200000, 200000],
+      unit: 'miter',
+      animate: true,
+      duration: 500,
+      // icon: 'https://a.amap.com/Loca/static/loca-v2/demos/images/track_marker.png',
+      texture: 'https://a.amap.com/Loca/static/loca-v2/demos/images/breath_red.png',
+      // texture: './mapImg/address_icon.png',
+    });
+    loca.add(scatterLayer_city);
+    loca.animate.start();//标点动起来
+    //添加深圳标点
+    // var shenzhen = {
+    //   type: 'FeatureCollection',
+    //   features: [
+    //     {
+    //       type: "Feature",
+    //       properties: {
+    //         cityName: "深圳市",
+    //         ratio: 0,
+    //         rank: 96
+    //       },
+    //       geometry: {
+    //         type: "Point",
+    //         coordinates: [113.936903, 22.523912]
+    //       }
+    //     },]
+    // }
+    // const shenzhen_new = new Loca.GeoJSONSource({
+    //   data: shenzhen,
+    // });
+    // scatterLayer_shenzhen.setSource(shenzhen_new);
+    // scatterLayer_shenzhen.setStyle({
+    //   size: [400000, 400000],
+    //   unit: 'miter',
+    //   animate: true,
+    //   duration: 1000,
+    //   texture: 'https://a.amap.com/Loca/static/static/orange.png',
+    // });
+    // loca.add(scatterLayer_shenzhen);//添加深圳标点
+
+
+    var setLabelsLayer = (list) => {
+      labelLayer.clear();
+      list.forEach((item) => {
+        var labelsMarker = new AMap.LabelMarker({
+          name: item.country,
+          position: item.coordinates,
+          zooms: [2, 22],
+          opacity: 1,
+          zIndex: 10,
+          rank: item.country == "深圳" ? 100 : 10,
+          text: {
+            content: item.country,
+            direction: 'bottom',
+            offset: [0, -5],
+            style: {
+              fontSize: 13,
+              fontWeight: 'normal',
+              fillColor: '#fff',
+            },
+          },
+        });
+        labelLayer.add(labelsMarker);
+      });
+    };
+    setLabelsLayer(cityListText);//创建地图文字
+
+
+    // 柜机在线比例
+    var dom_three = document.getElementById('svg_three');
+    var myChart_three = echarts.init(dom_three, null, {
+      renderer: 'svg',
+      useDirtyRect: false
+    });
+    var option_three = {
+      series: [
+        {
+          type: 'pie',
+          radius: ['80%', '100%'],
+          avoidLabelOverlap: false,
+          color: [new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#5BF1F6' },
+            { offset: 1, color: '#62C83E' }
+          ]), '#71BEF4'],
+          label: {
+            normal: {
+              show: true,
+              position: 'center',
+              color: '#84FAEB',
+              formatter: '96% ' + '\n\r' + '\n\r' + '在线机器占比',
+              fontSize: 10,
+            },
+            emphasis: {//中间文字显示
+              show: true,
+            }
+          },
+          lableLine: {
+            normal: {
+              show: false
+            },
+            emphasis: {
+              show: true
+            },
+            tooltip: {
+              show: false
+            }
+          },
+          data: [
+            { value: 100, name: '全部' },
+            { value: 4, name: '离线' },
+
+          ]
+        }
+      ]
+    };
+    myChart_three.setOption(option_three);
+    setTimeout(() => {
+      myChart_three.resize();
+    })
+    // 用户身份占比
+    var dom_one = document.getElementById('svg_one');
+    var myChart_one = echarts.init(dom_one, null, {
+      renderer: 'svg',
+      useDirtyRect: false
+    });
+    var option_one = {
+      grid: {
+        left: -15,
+        right: 15,
+        bottom: 15,
+        top: 20,
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: ['管家', '正式会员', '体验会员', '普通会员'],
+        axisLine: {
+          show: false,
+        },
+        axisTick: {
+          show: false
+        },
+        axisLabel: {
+          fontSize: 14,
+          color: '#84FAEB',
+          fontWeight: 400,
+          interval: 0,
+          formatter: function (params) {
+            var newParamsName = ''
+            const paramsNameNumber = params.length
+            const provideNumber = 4 // 单行显示文字个数
+            const rowNumber = Math.ceil(paramsNameNumber / provideNumber)
+            if (paramsNameNumber > provideNumber) {
+              for (let p = 0; p < rowNumber; p++) {
+                var tempStr = ''
+                var start = p * provideNumber
+                var end = start + provideNumber
+                if (p === rowNumber - 1) {
+                  tempStr = params.substring(start, paramsNameNumber)
+                } else {
+                  tempStr = params.substring(start, end) + '\n'
+                }
+                newParamsName += tempStr
+              }
+            } else {
+              newParamsName = params
+            }
+            return newParamsName
+          }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        show: false,
+      },
+      series: [
+        {
+          data: [12, 27, 25, 46, 100],
+          type: 'bar',
+          barWidth: 20, //柱图宽度
+          itemStyle: {
+            barBorderRadius: [100, 100, 100, 100],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#5BF1F6' },
+              { offset: 1, color: '#62C83E' }
+            ])
+          },
+          label: {
+            show: true,
+            position: 'top',
+            color: '#84FAEB',
+            formatter: function (value, index) {
+              return value.value + '%';
+            }
+          },
+        }
+      ]
+    };
+    myChart_one.setOption(option_one);
+    setTimeout(() => {
+      myChart_one.resize();
+    })
+
+
+    // 签约店铺分类占比
+    var dom_two = document.getElementById('svg_two');
+    var myChart_two = echarts.init(dom_two, null, {
+      renderer: 'svg',
+      useDirtyRect: false
+    });
+    var option_two = {
+      series: [
+        {
+          name: 'Nightingale Chart',
+          type: 'pie',
+          radius: [15, 65],
+          center: ['50%', '52%'],
+          roseType: 'area',
+          itemStyle: {
+            borderRadius: 1
+          },
+          color: [
+            '#963CE3',
+            '#4A88EF',
+            '#1AD4C0',
+            '#42DA5B',
+            '#F4CC53',
+            '#E5803D',
+            '#EB1341',
+          ],
+          label: {
+            color: '#ffffff',
+            fontSize: 14,
+          },
+          data: [
+            { value: 40, name: '美食：20.13%' },
+            { value: 38, name: '美容美发：16.44%' },
+            { value: 32, name: '运动健身：15.55%' },
+            { value: 30, name: '生活服务：13.88%' },
+            { value: 28, name: '学习培训：11.54%' },
+            { value: 26, name: '亲子母婴：11.12%' },
+            { value: 22, name: '其他：11.34%' },
+          ]
+        }
+      ]
+    };
+    myChart_two.setOption(option_two);
+    setTimeout(() => {
+      myChart_two.resize();
+    })
+
+
+    // 智能柜机订单统计
+    var dom_four = document.getElementById('svg_four');
+    var myChart_four = echarts.init(dom_four, null, {
+      renderer: 'svg',
+      useDirtyRect: false
+    });
+    var option_four = {
+      grid: {
+        left: 12,
+        right: 12,
+        bottom: 3,
+        top: 20,
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          axisTick: {
+            alignWithLabel: true
+          },
+          data: [
+            '今日订单数',
+            '昨日订单数',
+            '本周订单数',
+            '本月订单数',
+          ],
+          axisTick: {
+            show: false // 不显示坐标轴刻度线
+          },
+          splitLine: {//分割线配置
+            show: false,
+          },
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: "#2488E2",
+            }
+          },
+          axisLabel: {
+            fontSize: 14,
+            color: '#84FAEB',
+            fontWeight: 400,
+            interval: 0,
+            formatter: function (params) {
+              var newParamsName = ''
+              const paramsNameNumber = params.length
+              const provideNumber = 5 // 单行显示文字个数
+              const rowNumber = Math.ceil(paramsNameNumber / provideNumber)
+              if (paramsNameNumber > provideNumber) {
+                for (let p = 0; p < rowNumber; p++) {
+                  var tempStr = ''
+                  var start = p * provideNumber
+                  var end = start + provideNumber
+                  if (p === rowNumber - 1) {
+                    tempStr = params.substring(start, paramsNameNumber)
+                  } else {
+                    tempStr = params.substring(start, end) + '\n'
+                  }
+                  newParamsName += tempStr
+                }
+              } else {
+                newParamsName = params
+              }
+              return newParamsName
+            }
+          },
+        },
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          min: 0,
+          max: 3000,
+          position: 'left',
+          splitLine: {
+            show: false, // 不显示网格线
+          },
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: "#2488E2",
+            }
+          },
+          axisLabel: {
+            fontSize: 14,
+            color: '#84FAEB',
+            fontWeight: 400,
+          },
+          splitNumber: 3,
+        },
+
+      ],
+      series: [
+        {
+          type: 'bar',
+          barWidth: 20, //柱图宽度
+          data: [0, 0, 0, 0],
+          label: {
+            show: true,
+            position: 'top',
+            color: '#84FAEB'
+          },
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#5BF1F6' },
+              { offset: 1, color: '#62C83E' }
+            ])
+          },
+        }
+      ]
+    };
+    myChart_four.setOption(option_four);//订单统计
+    setTimeout(() => {
+      myChart_four.resize();
+    })
+
+
+
+
+    // 柜机投放区位分布
+    var dom_five = document.getElementById('svg_five');
+    var myChart_five = echarts.init(dom_five, null, {
+      renderer: 'svg',
+      useDirtyRect: false
+    });
+    var option_five = {
+      tooltip: {
+        trigger: 'axis'
+      },
+      grid: {
+        x: 40,
+        x2: 60,
+        y2: 50,
+        calculable: true,
+      },
+
+      radar: [
+        {
+          indicator: [
+            { text: '华南地区', max: 39.11 },
+            { text: '西南地区', max: 39.11 },
+            { text: '华北地区', max: 39.11 },
+            { text: '华中地区', max: 39.11 },
+            { text: '华东地区', max: 39.11 }
+          ],
+          radius: '60%',
+          center: ['58%', '60%'],
+          splitNumber: 5,
+          nameGap: 20,
+          axisName: {
+            formatter: '{value}',
+            color: '#ffffff',
+            fontSize: 12,
+            padding: [0, 0, 8, 0]
+          },
+          axisLine: {
+            show: false,
+          },
+          lineStyle: {
+            color: '#259709',
+          },
+          splitArea: {
+            show: false,
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              width: 2,
+              color: "#2488E2", // 设置网格的颜色
+            },
+          },
+
+        },
+
+      ],
+      series: [
+        {
+          type: 'radar',
+          itemStyle: {
+            color: '#72DE57',
+          },
+          areaStyle: {
+            color: '#259709',
+            opacity: 1,
+          },
+          data: [
+            {
+              value: [39.11, 22.36, 7.12, 11.92, 19.46],
+              name: 'A Phone',
+              symbolSize: 8,
+              label: {
+                color: '#72DE57',
+                fontSize: 14,
+                show: true,
+                margin: 10,
+                formatter: function (params) {
+                  return params.value + '%';
+                }
+              }
+
+            },
+          ],
+
+        },
+
+      ]
+    };
+    myChart_five.setOption(option_five);
+    setTimeout(() => {
+      myChart_five.resize();
+    })
+
+
+    //处理屏幕变化导致的图表变化
+    window.addEventListener('resize', () => {
+      myChart_one.resize();
+      myChart_two.resize();
+      myChart_three.resize();
+      myChart_four.resize();
+      myChart_five.resize();
+    }, false);
+
+
+    function dateFormat(timeStamp, format) {
+      if (timeStamp) {
+        format = format || 'YYYY-MM-DD';
+        let week = [
+          '星期日',
+          '星期一',
+          '星期二',
+          '星期三',
+          '星期四',
+          '星期五',
+          '星期六'
+        ];
+        let date = new Date(parseInt(timeStamp));
+        let o = {
+          'M+': date.getMonth() + 1,
+          'D+': date.getDate(),
+          'h+': date.getHours() % 12,
+          'H+': date.getHours(),
+          'm+': date.getMinutes(),
+          's+': date.getSeconds(),
+          'q+': Math.floor((date.getMonth() + 3) / 3),
+          'S+': date.getMilliseconds(),
+          'W+': week[date.getDay()]
+        };
+
+        if (/(Y+)/.test(format))
+          format = format.replace(
+            RegExp.$1,
+            (date.getFullYear() + '').substr(4 - RegExp.$1.length)
+          );
+        for (let k in o)
+          if (new RegExp('(' + k + ')').test(format))
+            format = format.replace(
+              RegExp.$1,
+              RegExp.$1.length === 1
+                ? o[k]
+                : ('00' + o[k]).substr(('' + o[k]).length)
+            );
+        return format;
+      }
+    }
+
+
+    var week_sale = 0, month_sale = 0
+
+
+    function getRandomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+
+
+
+    console.log("大世界", $("#week_in").children())
+    jisuan()//开始计算
+    setInterval(() => {
+      let dateTime = Math.round(new Date())//获取系统当前时间
+      $('#time_txt').html(`更新截止时间：${dateFormat(dateTime, "YYYY年MM月DD日 HH:mm:ss")}`)
+    }, 1000)
+
+    setInterval(() => {
+      jisuan()
+    }, 180000)
+
+    function jisuan() {
+      let dateTime = Math.round(new Date())//获取系统当前时间
+      const dateTxt = (dateFormat(dateTime, "HH") * 60 + dateFormat(dateTime, "mm") * 1) - 540
+      week_sale = 17174 + dateTxt / 3 * 24.5
+      month_sale = 17174 + dateTxt / 3 * 24.5
+      console.log("week_sale", dateTxt, week_sale)
+      html_week_in()//本周销售额
+      html_month_in()//本月销售额
+      $('#register_total').html(Math.trunc(2052236 + (dateTxt / 3 * 4.5)))
+      $('#user_total').html(Math.trunc(503941 + (dateTxt / 5 * 1.5)))
+      $('#transaction_total').html(Math.trunc(203018 + (dateTxt / 3 * 51.5)))
+      $('#shop_total').html(Math.trunc(5442 + (dateTxt / 30 * 1)))
+      this.option_four.series[0].data = [Math.trunc(dateTxt / 2.9), 149, 752 + Math.trunc(dateTxt / 2.9), 752 + Math.trunc(dateTxt / 2.9)]
+      myChart_four.setOption(option_four);//订单统计
+
+    }
+
+    function html_week_in() {
+      $('#month_in li').eq(4).removeClass("remove_item_transform")
+      $('#month_in li').eq(5).removeClass("remove_item_transform")
+      $('#month_in li').eq(4).addClass('add_item_transform')
+      $('#month_in li').eq(5).addClass('add_item_transform')
+      setTimeout(() => {
+        $('#month_in li').eq(4).removeClass("add_item_transform")
+        $('#month_in li').eq(5).removeClass("add_item_transform")
+        $('#month_in li').eq(4).addClass('remove_item_transform')
+        $('#month_in li').eq(5).addClass('remove_item_transform')
+        let str = month_sale.toString();
+        let arr = str.split("")
+        arr.forEach((item, index) => {
+          $('#month_in li').eq(index + 1).html(item)
+        })
+      }, 1000)
+    }
+
+    function html_month_in() {
+      $('#week_in li').eq(4).removeClass("remove_item_transform")
+      $('#week_in li').eq(5).removeClass("remove_item_transform")
+      $('#week_in li').eq(4).addClass('add_item_transform')
+      $('#week_in li').eq(5).addClass('add_item_transform')
+      setTimeout(() => {
+        $('#week_in li').eq(4).removeClass("add_item_transform")
+        $('#week_in li').eq(5).removeClass("add_item_transform")
+        $('#week_in li').eq(4).addClass('remove_item_transform')
+        $('#week_in li').eq(5).addClass('remove_item_transform')
+        let str = week_sale.toString();
+        let arr = str.split("")
+        arr.forEach((item, index) => {
+          console.log("item", item + 1)
+          $('#week_in li').eq(index + 1).html(item)
+        })
+      }, 1000)
+    }
+
+  </script>
+</body>
+
+</html>
